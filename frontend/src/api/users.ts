@@ -1,0 +1,27 @@
+import apiClient from './client'
+
+export interface User {
+  id: number
+  username: string
+  full_name: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export const usersApi = {
+  getMe: async (): Promise<User> => {
+    const response = await apiClient.get('/users/me/profile')
+    return response.data
+  },
+
+  getAll: async (): Promise<User[]> => {
+    const response = await apiClient.get('/users/')
+    return response.data
+  },
+
+  getById: async (id: number): Promise<User> => {
+    const response = await apiClient.get(`/users/${id}`)
+    return response.data
+  },
+}
