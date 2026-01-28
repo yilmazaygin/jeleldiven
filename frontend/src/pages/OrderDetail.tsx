@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Modal, FormField, Textarea } from '@/components/ui/Modal'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { toast } from 'sonner'
-import { ArrowLeft, Package, DollarSign } from 'lucide-react'
+import { ArrowLeft, Package, DollarSign, Plus, Trash2 } from 'lucide-react'
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>()
@@ -21,6 +22,8 @@ export default function OrderDetail() {
   const [cancelReason, setCancelReason] = useState('')
   const [showCancelForm, setShowCancelForm] = useState(false)
   const [showPaymentForm, setShowPaymentForm] = useState(false)
+  const [showNoteModal, setShowNoteModal] = useState(false)
+  const [newNote, setNewNote] = useState('')
 
   const fetchOrder = async () => {
     try {
@@ -82,6 +85,33 @@ export default function OrderDetail() {
       setPaymentAmount('')
     } catch (error) {
       toast.error('Failed to add payment')
+    }
+  }
+
+  const handleAddNote = async () => {
+    if (!order || !newNote.trim()) {
+      toast.error('Please enter a note')
+      return
+    }
+    try {
+      await ordersApi.addNote(order.id, newNote)
+      toast.success('Note added')
+      setNewNote('')
+      setShowNoteModal(false)
+      fetchOrder()
+    } catch (error) {
+      toast.error('Failed to add note')
+    }
+  }
+
+  const handleDeleteNote = async (noteId: number) => {
+    if (!order || !confirm('Delete this note?')) return
+    try {
+      await ordersApi.deleteNote(order.id, noteId)
+      toast.success('Note deleted')
+      fetchOrder()
+    } catch (error) {
+      toast.error('Failed to delete note')
     }
   }
 
@@ -270,6 +300,63 @@ export default function OrderDetail() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Order Notes</CardTitle>
+            {!order.is_cancelled && !order.is_delivered && (
+              <Button size="sm" onClick={() => setShowNoteModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Note
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {order.notes.map((note) => (
+              <div key={note.id} className="border-b pb-2 flex justify-between">
+                <div className="flex-1">
+                  <p className="text-sm">{note.note}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatDateTime(note.created_at)}
+                  </p>
+                </div>
+                {!order.is_cancelled && !order.is_delivered && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleDeleteNote(note.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            {order.notes.length === 0 && (
+              <p className="text-sm text-muted-foreground">No notes</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Modal isOpen={showNoteModal} onClose={() => setShowNoteModal(false)} title="Add Order Note">
+        <div className="space-y-4">
+          <FormField label="Note" required>
+            <Textarea
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              placeholder="Enter note"
+              rows={4}
+            />
+          </FormField>
+          <div className="flex gap-2">
+            <Button onClick={handleAddNote} className="flex-1">Add</Button>
+            <Button variant="outline" onClick={() => setShowNoteModal(false)} className="flex-1">Cancel</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

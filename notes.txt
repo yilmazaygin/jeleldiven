@@ -1,0 +1,2 @@
+uvicorn app.main:app --reload
+cd C:\Yilmaz\Projects\jeleldiven\frontend; npm run dev

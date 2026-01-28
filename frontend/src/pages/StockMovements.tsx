@@ -1,34 +1,68 @@
 import { useEffect, useState } from 'react'
-import { stockApi, StockMovement } from '@/api/stock'
+import { stockApi, StockMovement, StockMovementCreate } from '@/api/stock'
 import { productsApi, Product } from '@/api/products'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Modal, FormField, Select, Textarea } from '@/components/ui/Modal'
 import { formatDateTime, formatCurrency } from '@/lib/utils'
 import { toast } from 'sonner'
+import { Plus } from 'lucide-react'
 
 export default function StockMovements() {
   const [movements, setMovements] = useState<StockMovement[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [formData, setFormData] = useState<StockMovementCreate>({
+    product_id: 0,
+    quantity: 0,
+    movement_type: 'purchase',
+    total_cost: undefined,
+    description: ''
+  })
+
+  const fetchData = async () => {
+    try {
+      const [movementsData, productsData] = await Promise.all([
+        stockApi.getAll(),
+        productsApi.getAll(),
+      ])
+      setMovements(movementsData)
+      setProducts(productsData)
+    } catch (error) {
+      toast.error('Failed to load stock movements')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [movementsData, productsData] = await Promise.all([
-          stockApi.getAll(),
-          productsApi.getAll(),
-        ])
-        setMovements(movementsData)
-        setProducts(productsData)
-      } catch (error) {
-        toast.error('Failed to load stock movements')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
   }, [])
+
+  const handleCreate = async () => {
+    if (!formData.product_id || formData.quantity === 0) {
+      toast.error('Please fill required fields')
+      return
+    }
+    try {
+      await stockApi.create(formData)
+      toast.success('Stock movement created')
+      setShowCreateModal(false)
+      setFormData({
+        product_id: 0,
+        quantity: 0,
+        movement_type: 'purchase',
+        total_cost: undefined,
+        description: ''
+      })
+      fetchData()
+    } catch (error) {
+      toast.error('Failed to create stock movement')
+    }
+  }
 
   const getProductName = (productId: number) => {
     return products.find((p) => p.id === productId)?.name || 'Unknown'
@@ -45,7 +79,13 @@ export default function StockMovements() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">Stock Movements</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Stock Movements</h1>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Movement
+        </Button>
+      </div>
 
       <div className="grid gap-4">
         {movements.map((movement) => (
@@ -89,6 +129,61 @@ export default function StockMovements() {
           </div>
         )}
       </div>
+
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Add Stock Movement">
+        <div className="space-y-4">
+          <FormField label="Product" required>
+            <Select
+              value={String(formData.product_id)}
+              onChange={(val) => setFormData({ ...formData, product_id: Number(val) })}
+              options={products.map(p => ({ value: String(p.id), label: p.name }))}
+              placeholder="Select product"
+            />
+          </FormField>
+          <FormField label="Movement Type" required>
+            <Select
+              value={formData.movement_type}
+              onChange={(val) => setFormData({ ...formData, movement_type: val as any })}
+              options={[
+                { value: 'purchase', label: 'Purchase' },
+                { value: 'manual_adjustment', label: 'Manual Adjustment' },
+                { value: 'delivery', label: 'Delivery' },
+                { value: 'promotion', label: 'Promotion' },
+                { value: 'tester', label: 'Tester' },
+                { value: 'waste', label: 'Waste' }
+              ]}
+            />
+          </FormField>
+          <FormField label="Quantity" required>
+            <Input
+              type="number"
+              value={formData.quantity}
+              onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+              placeholder="Positive for additions, negative for reductions"
+            />
+          </FormField>
+          <FormField label="Total Cost">
+            <Input
+              type="number"
+              step="0.01"
+              value={formData.total_cost || ''}
+              onChange={(e) => setFormData({ ...formData, total_cost: e.target.value ? parseFloat(e.target.value) : undefined })}
+              placeholder="Optional"
+            />
+          </FormField>
+          <FormField label="Description">
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Optional description"
+            />
+          </FormField>
+          <div className="flex gap-2">
+            <Button onClick={handleCreate} className="flex-1">Create</Button>
+            <Button variant="outline" onClick={() => setShowCreateModal(false)} className="flex-1">Cancel</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

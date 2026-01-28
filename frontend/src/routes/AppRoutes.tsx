@@ -4,10 +4,13 @@ import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import Orders from '@/pages/Orders'
 import OrderDetail from '@/pages/OrderDetail'
+import CreateOrder from '@/pages/CreateOrder'
 import Customers from '@/pages/Customers'
 import CustomerDetail from '@/pages/CustomerDetail'
 import Products from '@/pages/Products'
 import StockMovements from '@/pages/StockMovements'
+import Users from '@/pages/Users'
+import CustomerRevenue from '@/pages/CustomerRevenue'
 import Profile from '@/pages/Profile'
 import MainLayout from '@/layouts/MainLayout'
 
@@ -69,11 +72,14 @@ export default function AppRoutes() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="orders/create" element={<CreateOrder />} />
         <Route path="orders/:id" element={<OrderDetail />} />
         <Route path="customers" element={<Customers />} />
         <Route path="customers/:id" element={<CustomerDetail />} />
         <Route path="products" element={<Products />} />
         <Route path="stock-movements" element={<StockMovements />} />
+        <Route path="users" element={<Users />} />
+        <Route path="reports/customer-revenue" element={<CustomerRevenue />} />
         <Route path="profile" element={<Profile />} />
       </Route>
     </Routes>

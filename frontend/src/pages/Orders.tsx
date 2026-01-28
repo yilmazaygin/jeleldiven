@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ordersApi, Order } from '@/api/orders'
 import { customersApi, Customer } from '@/api/customers'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Plus } from 'lucide-react'
 
 export default function Orders() {
+  const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
@@ -51,38 +53,45 @@ export default function Orders() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold">Orders</h1>
-        <div className="flex gap-2 overflow-x-auto">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-md text-sm ${
-              filter === 'all'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('pending')}
-            className={`px-4 py-2 rounded-md text-sm ${
-              filter === 'pending'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground'
-            }`}
-          >
-            Pending
-          </button>
-          <button
-            onClick={() => setFilter('delivered')}
-            className={`px-4 py-2 rounded-md text-sm ${
-              filter === 'delivered'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground'
-            }`}
-          >
-            Delivered
-          </button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => navigate('/orders/create')}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Order
+          </Button>
         </div>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-4 py-2 rounded-md text-sm ${
+            filter === 'all'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setFilter('pending')}
+          className={`px-4 py-2 rounded-md text-sm ${
+            filter === 'pending'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          Pending
+        </button>
+        <button
+          onClick={() => setFilter('delivered')}
+          className={`px-4 py-2 rounded-md text-sm ${
+            filter === 'delivered'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          Delivered
+        </button>
       </div>
 
       <div className="grid gap-4">

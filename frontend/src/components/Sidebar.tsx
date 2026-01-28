@@ -10,7 +10,9 @@ import {
   LogOut,
   User,
   Moon,
-  Sun
+  Sun,
+  UserCog,
+  DollarSign
 } from 'lucide-react'
 import { Button } from './ui/Button'
 import { cn } from '@/lib/utils'
@@ -21,6 +23,8 @@ const navItems = [
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/products', label: 'Products', icon: Package },
   { to: '/stock-movements', label: 'Stock', icon: TrendingUp },
+  { to: '/reports/customer-revenue', label: 'Revenue Report', icon: DollarSign },
+  { to: '/users', label: 'User Management', icon: UserCog },
   { to: '/profile', label: 'Profile', icon: User },
 ]
 

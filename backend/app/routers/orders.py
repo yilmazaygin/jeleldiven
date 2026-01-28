@@ -68,8 +68,17 @@ async def create_order(
         db.add(order_item)
     
     await db.commit()
-    await db.refresh(order, ["items", "payments", "notes"])
     await log_activity(db, "orders", order.id, "created", current_user.id)
+    
+    # Eagerly load all relationships
+    result = await db.execute(
+        select(Order).where(Order.id == order.id).options(
+            selectinload(Order.items),
+            selectinload(Order.payments),
+            selectinload(Order.notes)
+        )
+    )
+    order = result.scalar_one()
     
     return await enrich_order_response(order)
 

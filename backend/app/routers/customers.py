@@ -23,6 +23,15 @@ async def create_customer(
     await db.commit()
     await db.refresh(customer)
     await log_activity(db, "customers", customer.id, "created", current_user.id)
+    
+    # Eagerly load relationships
+    result = await db.execute(
+        select(Customer).where(Customer.id == customer.id).options(
+            selectinload(Customer.statuses),
+            selectinload(Customer.notes)
+        )
+    )
+    customer = result.scalar_one()
     return customer
 
 
@@ -78,6 +87,15 @@ async def update_customer(
     await db.commit()
     await db.refresh(customer)
     await log_activity(db, "customers", customer.id, "updated", current_user.id)
+    
+    # Eagerly load relationships
+    result = await db.execute(
+        select(Customer).where(Customer.id == customer.id).options(
+            selectinload(Customer.statuses),
+            selectinload(Customer.notes)
+        )
+    )
+    customer = result.scalar_one()
     return customer
 
 

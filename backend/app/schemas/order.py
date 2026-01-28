@@ -51,11 +51,11 @@ class OrderResponse(BaseModel):
     id: int
     customer_id: int
     created_by: int
-    updated_by: int | None
-    cancelled_by: int | None
-    cancellation_reason: str | None
-    delivered_at: datetime | None
-    delivered_by: int | None
+    updated_by: int | None = None
+    cancelled_by: int | None = None
+    cancellation_reason: str | None = None
+    delivered_at: datetime | None = None
+    delivered_by: int | None = None
     is_cancelled: bool
     created_at: datetime
     updated_at: datetime
